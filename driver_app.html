@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
+<meta name="theme-color" content="#1B8A5A"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="ASA Driver"/>
+<link rel="manifest" href="manifest-driver.json"/>
+<title>ASA RIDE — Driver App</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--gr:#1B8A5A;--grd:#136B44;--grl:#E8F7F0;--sf:#F38B00;--sfd:#D97600;--lv:#8B7FD6;--bk:#14110F;--n8:#1A1530;--wh:#fff;--g5:#666}
+body{font-family:'Inter',sans-serif;background:#f5f5f5;color:var(--bk);max-width:430px;margin:0 auto;min-height:100vh;overflow-x:hidden}
+#splash{position:fixed;inset:0;background:linear-gradient(135deg,#0a1f14,#136B44);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s}
+#splash.hide{opacity:0;pointer-events:none}
+.sp-logo{font-size:4rem;margin-bottom:1rem;animation:bounce .8s ease-in-out infinite alternate}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-12px)}}
+.sp-title{font-size:2rem;font-weight:900;color:#fff}.sp-title span{color:#4ade80}
+.sp-sub{font-size:.82rem;color:rgba(255,255,255,.4);margin-top:.4rem}
+.sp-bar{width:180px;height:3px;background:rgba(255,255,255,.1);border-radius:100px;margin-top:2rem;overflow:hidden}
+.sp-fill{height:100%;background:linear-gradient(90deg,var(--gr),#4ade80);border-radius:100px;animation:load 1.8s ease forwards}
+@keyframes load{from{width:0}to{width:100%}}
+/* INSTALL */
+#install-banner{background:linear-gradient(135deg,var(--gr),var(--grd));padding:12px 16px;display:none;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+#install-banner.show{display:flex}
+.ib-btn{background:#fff;color:var(--grd);border:none;border-radius:8px;padding:7px 14px;font-size:.75rem;font-weight:800;cursor:pointer;flex-shrink:0}
+/* HEADER */
+.drv-header{background:linear-gradient(135deg,var(--gr),var(--grd));padding:16px;padding-top:max(16px,env(safe-area-inset-top));position:sticky;top:0;z-index:50}
+.drv-header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.drv-logo{font-size:1rem;font-weight:900;color:#fff;display:flex;align-items:center;gap:6px}
+.drv-logo span{background:rgba(255,255,255,.2);border-radius:8px;padding:2px 8px}
+.online-toggle{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.2);border-radius:100px;padding:8px 16px;cursor:pointer}
+.toggle-dot{width:12px;height:12px;border-radius:50%;transition:background .3s}
+.toggle-dot.online{background:#4ade80;box-shadow:0 0 8px #4ade80}
+.toggle-dot.offline{background:#ff6b6b}
+.toggle-lbl{font-size:.82rem;font-weight:700;color:#fff}
+.drv-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ds-card{background:rgba(255,255,255,.12);border-radius:12px;padding:10px;text-align:center}
+.ds-val{font-size:1.1rem;font-weight:900;color:#fff}
+.ds-lbl{font-size:.6rem;color:rgba(255,255,255,.55);margin-top:2px}
+/* RIDE REQUEST */
+.ride-req{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.8);display:none;align-items:flex-end;justify-content:center}
+.ride-req.show{display:flex}
+.req-card{background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:430px;padding:20px;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.req-timer{text-align:center;margin-bottom:12px}
+.req-timer-circle{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--sf),var(--sfd));color:#fff;font-size:1.2rem;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(243,139,0,.4)}50%{box-shadow:0 0 0 12px rgba(243,139,0,0)}}
+.req-lbl{font-size:.75rem;color:var(--g5);font-weight:600}
+.req-route{background:#f8f8f8;border-radius:14px;padding:14px;margin-bottom:14px}
+.req-loc-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.req-loc-row:last-child{margin-bottom:0}
+.req-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.req-loc-txt{font-size:.85rem;font-weight:600}
+.req-meta-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.req-meta-item{background:linear-gradient(135deg,var(--grl),#d0f0e0);border-radius:10px;padding:10px;text-align:center}
+.req-meta-val{font-size:1rem;font-weight:900;color:var(--grd)}
+.req-meta-lbl{font-size:.6rem;color:var(--gr);margin-top:2px}
+.req-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.req-accept{background:linear-gradient(135deg,var(--gr),var(--grd));color:#fff;border:none;border-radius:14px;padding:16px;font-size:.95rem;font-weight:800;cursor:pointer}
+.req-reject{background:#fff;color:var(--g5);border:1.5px solid #e5e5e5;border-radius:14px;padding:16px;font-size:.95rem;font-weight:700;cursor:pointer}
+/* MAIN CONTENT */
+.page{display:none;padding:0 0 80px}
+.page.active{display:block}
+.sec-title{font-size:.8rem;font-weight:700;color:var(--g5);padding:14px 16px 8px;text-transform:uppercase;letter-spacing:.5px}
+/* EARNINGS */
+.earn-card{background:linear-gradient(135deg,var(--n8),#1a2e44);border-radius:16px;margin:10px 16px;padding:16px;color:#fff}
+.earn-today{font-size:2.2rem;font-weight:900;color:#4ade80;margin-bottom:4px}
+.earn-lbl{font-size:.75rem;color:rgba(255,255,255,.5)}
+.earn-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px}
+.eg-item{background:rgba(255,255,255,.08);border-radius:10px;padding:10px;text-align:center}
+.eg-val{font-size:1rem;font-weight:800;color:#fff}
+.eg-lbl{font-size:.6rem;color:rgba(255,255,255,.45);margin-top:2px}
+/* RIDE HISTORY */
+.ride-item-d{background:#fff;border-radius:14px;margin:6px 16px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.05);display:flex;gap:10px;align-items:center}
+.ri-ic{width:40px;height:40px;border-radius:10px;background:var(--grl);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.ri-info{flex:1}
+.ri-route{font-size:.8rem;font-weight:700;margin-bottom:2px}
+.ri-meta{font-size:.7rem;color:var(--g5)}
+.ri-earn{text-align:right}
+.ri-total{font-size:.9rem;font-weight:900;color:var(--grd)}
+.ri-mine{font-size:.65rem;color:var(--gr);font-weight:700}
+/* PROFILE */
+.drv-profile-hdr{background:linear-gradient(135deg,var(--gr),var(--grd));padding:30px 16px 20px;text-align:center}
+.drv-av-big{width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.2);border:3px solid rgba(255,255,255,.4);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:2.5rem}
+.imei-box{background:rgba(0,0,0,.15);border-radius:10px;padding:8px 14px;margin:10px 0 0;font-size:.72rem;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:6px}
+.menu-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border-bottom:1px solid #f5f5f5;cursor:pointer}
+.menu-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.menu-lbl{flex:1;font-size:.88rem;font-weight:600}
+.menu-arr{color:#ccc;font-size:.8rem}
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid #f0f0f0;display:flex;padding:8px 0;padding-bottom:max(8px,env(safe-area-inset-bottom));z-index:100;box-shadow:0 -2px 12px rgba(0,0,0,.08)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 0}
+.nav-ic{font-size:1.3rem}
+.nav-lbl{font-size:.6rem;font-weight:600;color:#aaa}
+.nav-item.active .nav-lbl{color:var(--gr)}
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:100px;font-size:.78rem;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+/* REJECT REASON */
+#reject-modal{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.8);display:none;align-items:flex-end;justify-content:center}
+#reject-modal.show{display:flex}
+.reject-card{background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:430px;padding:20px}
+.reject-opt{display:flex;align-items:center;gap:10px;padding:12px;border:1.5px solid #f0f0f0;border-radius:12px;margin-bottom:8px;cursor:pointer;transition:all .2s}
+.reject-opt:active{background:#f8f8f8}
+.reject-opt-ic{font-size:1.2rem}
+.reject-opt-txt{font-size:.85rem;font-weight:600}
+</style>
+</head>
+<body>
+<div id="splash">
+  <div class="sp-logo">🚗</div>
+  <div class="sp-title"><span>ASA</span> RIDE Driver</div>
+  <div class="sp-sub">72% Kamai · Same-Day Settlement</div>
+  <div class="sp-bar"><div class="sp-fill"></div></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- INSTALL BANNER -->
+<div id="install-banner">
+  <div style="font-size:1.3rem;flex-shrink:0">📲</div>
+  <div style="flex:1;color:#fff;font-size:.78rem;font-weight:600;line-height:1.4">Driver App install karein — home screen par icon!</div>
+  <button class="ib-btn" id="install-btn">Install</button>
+</div>
+
+<!-- RIDE REQUEST POPUP -->
+<div class="ride-req" id="ride-req">
+  <div class="req-card">
+    <div class="req-timer">
+      <div class="req-timer-circle" id="req-count">25</div>
+      <div class="req-lbl">Seconds mein accept karo</div>
+    </div>
+    <div class="req-route">
+      <div class="req-loc-row">
+        <div class="req-dot" style="background:#1B8A5A"></div>
+        <div class="req-loc-txt" id="req-pickup">Connaught Place, Delhi</div>
+      </div>
+      <div style="border-left:2px dashed #eee;margin-left:4px;height:14px"></div>
+      <div class="req-loc-row" style="margin-bottom:0">
+        <div class="req-dot" style="background:#F38B00"></div>
+        <div class="req-loc-txt" id="req-drop">Lajpat Nagar, Delhi</div>
+      </div>
+    </div>
+    <div class="req-meta-row">
+      <div class="req-meta-item"><div class="req-meta-val" id="req-dist">5.2 km</div><div class="req-meta-lbl">Distance</div></div>
+      <div class="req-meta-item"><div class="req-meta-val" id="req-fare">₹74</div><div class="req-meta-lbl">Total Fare</div></div>
+      <div class="req-meta-item"><div class="req-meta-val" id="req-earn">₹53</div><div class="req-meta-lbl">Aapki Kamai (72%)</div></div>
+    </div>
+    <div class="req-btns">
+      <button class="req-accept" onclick="acceptRide()">✓ Accept</button>
+      <button class="req-reject" onclick="showReject()">✕ Reject</button>
+    </div>
+  </div>
+</div>
+
+<!-- REJECT REASON MODAL -->
+<div id="reject-modal">
+  <div class="reject-card">
+    <div style="font-size:.9rem;font-weight:800;margin-bottom:14px">Reject karne ka karan batayein *</div>
+    <div class="reject-opt" onclick="rejectWith('Too far from pickup')"><div class="reject-opt-ic">📍</div><div class="reject-opt-txt">Pickup bahut door hai</div></div>
+    <div class="reject-opt" onclick="rejectWith('Vehicle issue')"><div class="reject-opt-ic">🔧</div><div class="reject-opt-txt">Vehicle mein problem hai</div></div>
+    <div class="reject-opt" onclick="rejectWith('Personal break')"><div class="reject-opt-ic">☕</div><div class="reject-opt-txt">Break le raha hoon</div></div>
+    <div class="reject-opt" onclick="rejectWith('Route not feasible')"><div class="reject-opt-ic">🗺️</div><div class="reject-opt-txt">Route theek nahi hai</div></div>
+    <div class="reject-opt" onclick="rejectWith('Other reason')"><div class="reject-opt-ic">💬</div><div class="reject-opt-txt">Dusra karan</div></div>
+    <button onclick="document.getElementById('reject-modal').classList.remove('show')" style="width:100%;background:#f8f8f8;border:none;border-radius:12px;padding:13px;font-size:.85rem;font-weight:600;cursor:pointer;margin-top:8px">Wapas jaao</button>
+  </div>
+</div>
+
+<!-- HOME PAGE -->
+<div class="page active" id="pg-home">
+  <div class="drv-header">
+    <div class="drv-header-top">
+      <div class="drv-logo"><span>ASA</span> 🚗 Driver</div>
+      <div class="online-toggle" id="online-toggle" onclick="toggleOnline()">
+        <div class="toggle-dot online" id="toggle-dot"></div>
+        <div class="toggle-lbl" id="toggle-lbl">Online</div>
+      </div>
+    </div>
+    <div class="drv-stats">
+      <div class="ds-card"><div class="ds-val" id="today-earn">₹0</div><div class="ds-lbl">Aaj ki kamai</div></div>
+      <div class="ds-card"><div class="ds-val" id="today-rides">0</div><div class="ds-lbl">Aaj ki rides</div></div>
+      <div class="ds-card"><div class="ds-val">4.8 ⭐</div><div class="ds-lbl">Rating</div></div>
+    </div>
+  </div>
+
+  <div class="earn-card">
+    <div class="earn-lbl">Is hafte ki kamai</div>
+    <div class="earn-today" id="week-earn">₹3,240</div>
+    <div class="earn-grid">
+      <div class="eg-item"><div class="eg-val">28</div><div class="eg-lbl">Rides</div></div>
+      <div class="eg-item"><div class="eg-val">142 km</div><div class="eg-lbl">Distance</div></div>
+      <div class="eg-item"><div class="eg-val">₹200</div><div class="eg-lbl">Fuel Bonus</div></div>
+    </div>
+  </div>
+
+  <div class="sec-title">Aaj ki rides</div>
+  <div id="today-rides-list">
+    <div style="text-align:center;padding:30px 16px;color:var(--g5)">
+      <div style="font-size:2rem;margin-bottom:8px">🚗</div>
+      <div style="font-size:.85rem;font-weight:600">Abhi koi ride nahi</div>
+      <div style="font-size:.75rem;margin-top:4px">Online raho — ride request aayegi!</div>
+    </div>
+  </div>
+</div>
+
+<!-- EARNINGS PAGE -->
+<div class="page" id="pg-earn">
+  <div class="drv-header" style="background:linear-gradient(135deg,var(--n8),#1a2e44)">
+    <div class="drv-header-top">
+      <div class="drv-logo">💰 Meri Kamai</div>
+      <div style="font-size:.75rem;color:rgba(255,255,255,.5)">72% har ride ka</div>
+    </div>
+  </div>
+  <div class="earn-card">
+    <div class="earn-lbl">Aaj</div>
+    <div class="earn-today" id="earn-today2">₹0</div>
+    <div class="earn-grid">
+      <div class="eg-item"><div class="eg-val" id="earn-rides">0</div><div class="eg-lbl">Rides</div></div>
+      <div class="eg-item"><div class="eg-val">Same-day</div><div class="eg-lbl">Settlement</div></div>
+      <div class="eg-item"><div class="eg-val">UPI</div><div class="eg-lbl">Payment</div></div>
+    </div>
+  </div>
+  <div class="sec-title">Is mahine</div>
+  <div style="margin:0 16px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05)">
+    <div style="display:flex;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #f5f5f5">
+      <span style="font-size:.82rem;color:var(--g5)">Total rides</span><span style="font-size:.88rem;font-weight:700">0</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #f5f5f5">
+      <span style="font-size:.82rem;color:var(--g5)">Total kamai (72%)</span><span style="font-size:.88rem;font-weight:700">₹0</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #f5f5f5">
+      <span style="font-size:.82rem;color:var(--g5)">CNG/Petrol bonus</span><span style="font-size:.88rem;font-weight:700;color:var(--gr)">₹0</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:12px 14px">
+      <span style="font-size:.88rem;font-weight:700">Total settlement</span><span style="font-size:1rem;font-weight:900;color:var(--gr)">₹0</span>
+    </div>
+  </div>
+  <div style="margin:12px 16px;background:var(--grl);border-radius:12px;padding:12px;font-size:.78rem;color:var(--grd);line-height:1.7">
+    💰 72% har ride ka milta hai<br>
+    ⚡ Same-day settlement — no waiting<br>
+    🎁 Fuel bonus: CNG ₹200/month, Bike ₹150/month
+  </div>
+</div>
+
+<!-- PROFILE PAGE -->
+<div class="page" id="pg-profile">
+  <div class="drv-profile-hdr">
+    <div class="drv-av-big">🧑</div>
+    <div style="font-size:1.1rem;font-weight:800;color:#fff">ASA RIDE Driver</div>
+    <div style="font-size:.8rem;color:rgba(255,255,255,.6);margin-top:2px">Auto Rickshaw · Verified ✓</div>
+    <div class="imei-box">🔒 IMEI Locked — Sirf is device se login hoga</div>
+  </div>
+  <div onclick="toast2('Support: +91 97990 60101')" class="menu-item"><div class="menu-ic" style="background:#E8F7F0">💬</div><div class="menu-lbl">WhatsApp Support</div><div class="menu-arr">›</div></div>
+  <div onclick="toast2('Complaint: +91 78773 01391')" class="menu-item"><div class="menu-ic" style="background:#fee2e2">📞</div><div class="menu-lbl">Complaint Number</div><div class="menu-arr">›</div></div>
+  <div onclick="toast2('Commission: 72% Driver · 28% Company')" class="menu-item"><div class="menu-ic" style="background:#FFF3E0">💰</div><div class="menu-lbl">Commission: 72% Mujhe</div><div class="menu-arr">›</div></div>
+  <div onclick="toast2('Insurance: 50% aap, 50% company')" class="menu-item"><div class="menu-ic" style="background:#F0EDFB">🛡️</div><div class="menu-lbl">Insurance: 50-50</div><div class="menu-arr">›</div></div>
+  <div onclick="toast2('Refer karke ₹500/month kamaao!')" class="menu-item"><div class="menu-ic" style="background:#E8F7F0">🎁</div><div class="menu-lbl">Refer a Driver — ₹500/month</div><div class="menu-arr">›</div></div>
+  <div style="padding:20px 16px;text-align:center;font-size:.72rem;color:#aaa">ASA RIDE Driver App v1.0<br>asaride2026@gmail.com · +91 97990 60101</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-item active" id="nav-home" onclick="showPage('pg-home','nav-home')"><div class="nav-ic">🏠</div><div class="nav-lbl">Home</div></div>
+  <div class="nav-item" id="nav-earn" onclick="showPage('pg-earn','nav-earn')"><div class="nav-ic">💰</div><div class="nav-lbl">Kamai</div></div>
+  <div class="nav-item" id="nav-profile" onclick="showPage('pg-profile','nav-profile')"><div class="nav-ic">👤</div><div class="nav-lbl">Profile</div></div>
+</div>
+
+<script>
+// SPLASH
+window.addEventListener('load',()=>{
+  setTimeout(()=>{document.getElementById('splash').classList.add('hide');setTimeout(()=>document.getElementById('splash').remove(),600);},2000);
+  checkInstall();
+  // Simulate ride request after 6 seconds
+  setTimeout(simulateRideReq, 6000);
+});
+
+// INSTALL
+var deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('install-banner').classList.add('show');});
+document.getElementById('install-btn').addEventListener('click',()=>{
+  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('install-banner').classList.remove('show');});}
+  else toast2('Browser mein: Menu → Add to Home Screen!');
+});
+function checkInstall(){if(window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone)document.getElementById('install-banner').classList.remove('show');}
+
+// ONLINE TOGGLE
+var isOnline=true,todayEarn=0,todayRidesCount=0;
+function toggleOnline(){
+  isOnline=!isOnline;
+  var dot=document.getElementById('toggle-dot');
+  var lbl=document.getElementById('toggle-lbl');
+  dot.className='toggle-dot '+(isOnline?'online':'offline');
+  lbl.textContent=isOnline?'Online':'Offline';
+  toast2(isOnline?'✅ Aap Online hain — rides aayengi!':'⛔ Aap Offline hain');
+  if(isOnline)setTimeout(simulateRideReq,5000);
+}
+
+// SIMULATE RIDE REQUEST
+var reqTimer=null;
+function simulateRideReq(){
+  if(!isOnline)return;
+  var pickups=['Connaught Place, Delhi','Andheri West, Mumbai','MG Road, Bengaluru','Lal Darwaza, Ahmedabad','MI Road, Jaipur'];
+  var drops=['Lajpat Nagar, Delhi','Bandra West, Mumbai','Koramangala, Bengaluru','Satellite, Ahmedabad','Vaishali Nagar, Jaipur'];
+  var i=Math.floor(Math.random()*pickups.length);
+  var km=(Math.random()*8+2).toFixed(1);
+  var fare=Math.round(km*13);var earn=Math.round(fare*.72);
+  document.getElementById('req-pickup').textContent=pickups[i];
+  document.getElementById('req-drop').textContent=drops[i];
+  document.getElementById('req-dist').textContent=km+' km';
+  document.getElementById('req-fare').textContent='₹'+fare;
+  document.getElementById('req-earn').textContent='₹'+earn;
+  document.getElementById('ride-req').classList.add('show');
+  var cnt=25;
+  document.getElementById('req-count').textContent=cnt;
+  reqTimer=setInterval(()=>{cnt--;document.getElementById('req-count').textContent=cnt;if(cnt<=0){clearInterval(reqTimer);document.getElementById('ride-req').classList.remove('show');toast2('⏰ Request expire ho gayi');if(isOnline)setTimeout(simulateRideReq,8000);}},1000);
+}
+function acceptRide(){
+  clearInterval(reqTimer);
+  document.getElementById('ride-req').classList.remove('show');
+  todayEarn+=parseInt(document.getElementById('req-earn').textContent.replace('₹',''));
+  todayRidesCount++;
+  document.getElementById('today-earn').textContent='₹'+todayEarn;
+  document.getElementById('today-rides').textContent=todayRidesCount;
+  document.getElementById('earn-today2').textContent='₹'+todayEarn;
+  document.getElementById('earn-rides').textContent=todayRidesCount;
+  toast2('✅ Ride accept ki! Customer tak jaao.');
+  if(isOnline)setTimeout(simulateRideReq,12000);
+}
+function showReject(){document.getElementById('reject-modal').classList.add('show');}
+function rejectWith(reason){
+  clearInterval(reqTimer);
+  document.getElementById('ride-req').classList.remove('show');
+  document.getElementById('reject-modal').classList.remove('show');
+  toast2('Ride reject — Reason: '+reason);
+  if(isOnline)setTimeout(simulateRideReq,6000);
+}
+
+// NAV
+function showPage(pid,nid){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(pid)?.classList.add('active');
+  if(nid)document.getElementById(nid)?.classList.add('active');
+}
+function toast2(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+</script>
+</body>
+</html>

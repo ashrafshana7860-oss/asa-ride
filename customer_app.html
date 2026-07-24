@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
+<meta name="theme-color" content="#F38B00"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="ASA RIDE"/>
+<meta name="application-name" content="ASA RIDE"/>
+<meta name="description" content="ASA RIDE Customer App — Auto, Bike, Cab, E-Rickshaw booking Pan India"/>
+<link rel="manifest" href="manifest-customer.json"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23F38B00'/><text y='68' x='50' text-anchor='middle' font-size='52'>🚗</text></svg>"/>
+<title>ASA RIDE — Ride Book karo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--sf:#F38B00;--sfd:#D97600;--sfl:#FFF3E0;--gr:#1B8A5A;--grd:#136B44;--grl:#E8F7F0;--lv:#8B7FD6;--bk:#14110F;--n8:#1A1530;--wh:#fff;--g5:#666;--g9:#f0f0f0}
+body{font-family:'Inter',sans-serif;background:#f5f5f5;color:var(--bk);max-width:430px;margin:0 auto;min-height:100vh;overflow-x:hidden}
+/* SPLASH */
+#splash{position:fixed;inset:0;background:linear-gradient(135deg,var(--bk),var(--n8));display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s}
+#splash.hide{opacity:0;pointer-events:none}
+.sp-logo{font-size:4rem;margin-bottom:1rem;animation:bounce .8s ease-in-out infinite alternate}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-12px)}}
+.sp-title{font-size:2rem;font-weight:900;color:#fff;letter-spacing:-1px}
+.sp-title span{color:var(--sf)}
+.sp-sub{font-size:.85rem;color:rgba(255,255,255,.4);margin-top:.5rem}
+.sp-bar{width:180px;height:3px;background:rgba(255,255,255,.1);border-radius:100px;margin-top:2rem;overflow:hidden}
+.sp-fill{height:100%;background:linear-gradient(90deg,var(--sf),var(--lv));border-radius:100px;animation:load 1.8s ease forwards}
+@keyframes load{from{width:0}to{width:100%}}
+/* INSTALL BANNER */
+#install-banner{background:linear-gradient(135deg,var(--sf),var(--sfd));padding:12px 16px;display:none;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+#install-banner.show{display:flex}
+.ib-ic{font-size:1.5rem;flex-shrink:0}
+.ib-txt{flex:1;color:#fff;font-size:.78rem;line-height:1.4;font-weight:600}
+.ib-btn{background:#fff;color:var(--sfd);border:none;border-radius:8px;padding:7px 14px;font-size:.75rem;font-weight:800;cursor:pointer;flex-shrink:0}
+/* HEADER */
+.app-header{background:linear-gradient(135deg,var(--sf),var(--sfd));padding:16px;padding-top:max(16px,env(safe-area-inset-top));position:sticky;top:0;z-index:50}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.header-logo{font-size:1.1rem;font-weight:900;color:#fff;display:flex;align-items:center;gap:6px}
+.header-logo span{background:rgba(255,255,255,.2);border-radius:8px;padding:2px 8px}
+.header-avatar{width:34px;height:34px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;cursor:pointer}
+.greet{font-size:.75rem;color:rgba(255,255,255,.7);margin-bottom:2px}
+.greet-title{font-size:1.1rem;font-weight:800;color:#fff}
+/* SEARCH BOX */
+.search-wrap{background:#fff;border-radius:16px;padding:14px;margin:0 16px;margin-top:-8px;box-shadow:0 4px 20px rgba(0,0,0,.12);position:relative;z-index:10}
+.loc-row{display:flex;align-items:center;gap:10px;padding:8px 0}
+.loc-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.loc-dot.green{background:var(--gr)}
+.loc-dot.orange{background:var(--sf)}
+.loc-line{width:2px;height:18px;background:#eee;margin-left:4px}
+.loc-input{flex:1;border:none;outline:none;font-size:.88rem;font-family:'Inter',sans-serif;color:var(--bk)}
+.loc-input::placeholder{color:#aaa}
+.loc-gps{width:28px;height:28px;background:var(--grl);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.85rem;flex-shrink:0}
+.search-divider{height:1px;background:#f0f0f0;margin:4px 0 4px 20px}
+/* VEHICLE SCROLL */
+.sec-title{font-size:.82rem;font-weight:700;color:var(--g5);padding:16px 16px 8px;text-transform:uppercase;letter-spacing:.5px}
+.vh-scroll{display:flex;gap:10px;padding:0 16px 4px;overflow-x:auto;scrollbar-width:none}
+.vh-scroll::-webkit-scrollbar{display:none}
+.vh-card{background:#fff;border-radius:14px;padding:14px 12px;text-align:center;min-width:90px;cursor:pointer;border:2px solid transparent;flex-shrink:0;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.vh-card.active{border-color:var(--sf);background:var(--sfl)}
+.vh-card:active{transform:scale(.96)}
+.vh-ic{font-size:1.75rem;margin-bottom:4px}
+.vh-nm{font-size:.72rem;font-weight:700;color:var(--bk)}
+.vh-pr{font-size:.65rem;color:var(--sf);font-weight:600;margin-top:2px}
+/* FARE CARD */
+.fare-card{background:#fff;border-radius:16px;margin:8px 16px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.fare-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.fare-lbl{font-size:.78rem;color:var(--g5)}
+.fare-val{font-size:.88rem;font-weight:700}
+.fare-disc{color:var(--gr);font-size:.75rem;font-weight:600}
+.fare-total{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f0f0f0;padding-top:10px;margin-top:6px}
+.fare-total-lbl{font-size:.9rem;font-weight:700}
+.fare-total-val{font-size:1.4rem;font-weight:900;color:var(--sf)}
+/* BOOK BTN */
+.book-btn{background:linear-gradient(135deg,var(--sf),var(--sfd));color:#fff;border:none;width:calc(100% - 32px);margin:8px 16px;padding:16px;border-radius:16px;font-size:1rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(243,139,0,.4)}
+.book-btn:active{transform:scale(.98)}
+/* PROMO BANNER */
+.promo-banner{background:linear-gradient(135deg,#1a2e44,#0a1628);border-radius:16px;margin:8px 16px;padding:14px;display:flex;align-items:center;gap:12px}
+.promo-ic{font-size:2rem;flex-shrink:0}
+.promo-title{font-size:.85rem;font-weight:800;color:#fff;margin-bottom:2px}
+.promo-sub{font-size:.72rem;color:rgba(255,255,255,.5);line-height:1.5}
+.promo-badge{background:var(--sf);color:#fff;font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:100px;margin-top:4px;display:inline-block}
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid #f0f0f0;display:flex;padding:8px 0;padding-bottom:max(8px,env(safe-area-inset-bottom));z-index:100;box-shadow:0 -2px 12px rgba(0,0,0,.08)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 0}
+.nav-ic{font-size:1.3rem}
+.nav-lbl{font-size:.6rem;font-weight:600;color:#aaa}
+.nav-item.active .nav-lbl{color:var(--sf)}
+.nav-item.active .nav-ic{filter:none}
+/* PAGES */
+.page{display:none;padding:0 0 80px}
+.page.active{display:block}
+/* RIDES PAGE */
+.ride-item{background:#fff;border-radius:14px;margin:8px 16px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;gap:12px;align-items:center}
+.ride-ic{width:44px;height:44px;border-radius:12px;background:var(--sfl);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.ride-info{flex:1}
+.ride-route{font-size:.82rem;font-weight:700;margin-bottom:3px}
+.ride-meta{font-size:.72rem;color:var(--g5)}
+.ride-amt{font-size:.95rem;font-weight:900;color:var(--sf)}
+.ride-status{font-size:.65rem;padding:2px 8px;border-radius:100px;font-weight:700}
+.ride-status.done{background:var(--grl);color:var(--grd)}
+.ride-status.cancel{background:#fee2e2;color:#dc2626}
+/* REFER PAGE */
+.refer-hero{background:linear-gradient(135deg,var(--n8),var(--bk));padding:24px 16px;text-align:center}
+.refer-amt-big{font-size:3rem;font-weight:900;color:var(--sf);margin:8px 0}
+.refer-code-box{background:rgba(255,255,255,.08);border:1.5px dashed rgba(255,255,255,.2);border-radius:14px;padding:16px;margin:16px;text-align:center}
+.refer-code{font-size:1.5rem;font-weight:900;color:#fff;letter-spacing:3px}
+.copy-btn{background:var(--sf);color:#fff;border:none;border-radius:10px;padding:8px 20px;font-size:.8rem;font-weight:700;cursor:pointer;margin-top:10px}
+/* PROFILE PAGE */
+.profile-header{background:linear-gradient(135deg,var(--sf),var(--sfd));padding:30px 16px 20px;text-align:center}
+.profile-av{width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.2);border:3px solid rgba(255,255,255,.4);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:2.5rem}
+.profile-name{font-size:1.1rem;font-weight:800;color:#fff}
+.profile-phone{font-size:.8rem;color:rgba(255,255,255,.7);margin-top:2px}
+.menu-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border-bottom:1px solid #f5f5f5;cursor:pointer}
+.menu-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.menu-lbl{flex:1;font-size:.88rem;font-weight:600}
+.menu-arr{color:#ccc;font-size:.8rem}
+/* MAP OVERLAY */
+#map-overlay{display:none;position:fixed;inset:0;z-index:200;background:linear-gradient(135deg,#e8f5e9,#e3f2fd);flex-direction:column}
+#map-overlay.show{display:flex}
+.map-fake{flex:1;position:relative;overflow:hidden}
+.map-bg-el{position:absolute;inset:0}
+.map-pin-pickup{position:absolute;top:35%;left:30%;font-size:2rem;animation:pinbounce 1s ease-in-out infinite alternate;filter:drop-shadow(0 3px 6px rgba(0,0,0,.3))}
+@keyframes pinbounce{from{transform:translateY(0)}to{transform:translateY(-10px)}}
+.map-pin-drop{position:absolute;bottom:28%;right:22%;font-size:2rem;filter:drop-shadow(0 3px 6px rgba(0,0,0,.3))}
+.map-route{position:absolute;top:40%;left:34%;width:38%;height:3px;background:linear-gradient(90deg,var(--gr),var(--sf));transform:rotate(18deg);border-radius:3px;box-shadow:0 0 8px rgba(243,139,0,.4)}
+.map-car-anim{position:absolute;font-size:1.8rem;animation:carMove 3s ease-in-out infinite}
+@keyframes carMove{0%{left:30%;top:43%}100%{left:62%;top:33%}}
+.map-bottom{background:#fff;border-radius:20px 20px 0 0;padding:16px;box-shadow:0 -4px 20px rgba(0,0,0,.1)}
+.map-close{position:absolute;top:16px;left:16px;background:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:1rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15);z-index:10}
+/* DRIVER FOUND */
+.drv-found{background:linear-gradient(135deg,var(--n8),#2d2460);border-radius:16px;padding:14px;margin-bottom:12px;color:#fff}
+.drv-found-top{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.drv-av2{width:48px;height:48px;border-radius:50%;background:var(--sf);display:flex;align-items:center;justify-content:center;font-size:1.5rem;border:2px solid rgba(255,255,255,.2);flex-shrink:0}
+.drv-nm2{font-size:.95rem;font-weight:800;margin-bottom:2px}
+.drv-stars2{color:var(--sf);font-size:.8rem}
+.drv-veh2{font-size:.7rem;color:rgba(255,255,255,.6);margin-top:2px}
+.otp-strip{background:rgba(255,255,255,.1);border-radius:10px;padding:10px;text-align:center;margin-bottom:10px}
+.otp-lbl2{font-size:.65rem;color:rgba(255,255,255,.5);margin-bottom:2px}
+.otp-num{font-size:2rem;font-weight:900;letter-spacing:.4rem;color:var(--sf)}
+.action-row{display:flex;gap:8px}
+.act-btn{flex:1;border:none;border-radius:10px;padding:10px;font-size:.75rem;font-weight:700;cursor:pointer}
+.act-call{background:var(--gr);color:#fff}
+.act-chat{background:rgba(255,255,255,.15);color:#fff}
+.act-cancel{background:rgba(255,100,100,.2);color:#ff9999}
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:100px;font-size:.78rem;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+<div id="splash">
+  <div class="sp-logo">🚗</div>
+  <div class="sp-title"><span>ASA</span> RIDE</div>
+  <div class="sp-sub">India ka Apna Ride Platform</div>
+  <div class="sp-bar"><div class="sp-fill"></div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- INSTALL BANNER -->
+<div id="install-banner">
+  <div class="ib-ic">📲</div>
+  <div class="ib-txt">ASA RIDE app install karein — home screen par icon aayega!</div>
+  <button class="ib-btn" id="install-btn">Install</button>
+</div>
+
+<!-- HOME PAGE -->
+<div class="page active" id="pg-home">
+  <div class="app-header">
+    <div class="header-top">
+      <div class="header-logo"><span>ASA</span>🚗 RIDE</div>
+      <div class="header-avatar" onclick="showPage('pg-profile')">👤</div>
+    </div>
+    <div class="greet">Namaste! 👋</div>
+    <div class="greet-title">Kahan jaana hai aaj?</div>
+  </div>
+
+  <div class="search-wrap">
+    <div class="loc-row">
+      <div class="loc-dot green"></div>
+      <input class="loc-input" id="pickup-inp" placeholder="📍 Aapki location detect ho rahi hai..." readonly style="background:#f9fff9;font-size:.82rem"/>
+      <div class="loc-gps" onclick="fetchGPS()">📡</div>
+    </div>
+    <div class="search-divider"></div>
+    <div class="loc-row">
+      <div class="loc-dot orange"></div>
+      <input class="loc-input" id="drop-inp" placeholder="🏁 Kahan jaana hai?" oninput="calcFare()"/>
+    </div>
+  </div>
+
+  <div class="sec-title">Sawari chuniye</div>
+  <div class="vh-scroll">
+    <div class="vh-card active" id="v-auto" onclick="selVeh('AUTO',this)">
+      <div class="vh-ic">🛺</div>
+      <div class="vh-nm">Auto</div>
+      <div class="vh-pr">₹13/km</div>
+    </div>
+    <div class="vh-card" id="v-bike" onclick="selVeh('BIKE',this)">
+      <div class="vh-ic">🛵</div>
+      <div class="vh-nm">Bike</div>
+      <div class="vh-pr">₹9/km</div>
+    </div>
+    <div class="vh-card" id="v-cab" onclick="selVeh('CAB',this)">
+      <div class="vh-ic">🚗</div>
+      <div class="vh-nm">Cab</div>
+      <div class="vh-pr">₹18/km</div>
+    </div>
+    <div class="vh-card" id="v-er" onclick="selVeh('ER',this)">
+      <div class="vh-ic">🛺</div>
+      <div class="vh-nm">E-Rick</div>
+      <div class="vh-pr">₹11/km</div>
+    </div>
+  </div>
+
+  <div class="fare-card" id="fare-card">
+    <div class="fare-row">
+      <span class="fare-lbl">Distance (+20m extra)</span>
+      <span class="fare-val" id="fc-dist">-- km</span>
+    </div>
+    <div class="fare-row">
+      <span class="fare-lbl">Base fare</span>
+      <span class="fare-val" id="fc-base">₹--</span>
+    </div>
+    <div class="fare-row">
+      <span class="fare-lbl">🎉 First ride discount</span>
+      <span class="fare-disc" id="fc-disc">-₹-- (15% off)</span>
+    </div>
+    <div class="fare-total">
+      <span class="fare-total-lbl">Total</span>
+      <span class="fare-total-val" id="fc-total">₹--</span>
+    </div>
+  </div>
+
+  <button class="book-btn" onclick="bookRide()">🛺 Ride Book karo →</button>
+
+  <div class="promo-banner">
+    <div class="promo-ic">🎁</div>
+    <div>
+      <div class="promo-title">Refer karein — ₹500 paayein!</div>
+      <div class="promo-sub">Dost ko invite karo, family ko bhi. Max 10 refers = ₹5,000</div>
+      <div class="promo-badge">ASAFIRST — Pehli ride 15% off</div>
+    </div>
+  </div>
+</div>
+
+<!-- RIDES PAGE -->
+<div class="page" id="pg-rides">
+  <div class="app-header" style="margin-bottom:0">
+    <div class="header-top">
+      <div class="header-logo"><span>ASA</span>🚗 RIDE</div>
+      <div style="color:rgba(255,255,255,.7);font-size:.8rem">Meri Rides</div>
+    </div>
+  </div>
+  <div id="rides-list">
+    <div class="ride-item">
+      <div class="ride-ic">🛺</div>
+      <div class="ride-info">
+        <div class="ride-route">Connaught Place → Lajpat Nagar</div>
+        <div class="ride-meta">Auto · 5.2 km · Aaj</div>
+      </div>
+      <div style="text-align:right">
+        <div class="ride-amt">₹52</div>
+        <div class="ride-status done">Complete</div>
+      </div>
+    </div>
+    <div class="ride-item">
+      <div class="ride-ic">🚗</div>
+      <div class="ride-info">
+        <div class="ride-route">Saket → Noida Sector 18</div>
+        <div class="ride-meta">Cab · 14.8 km · Kal</div>
+      </div>
+      <div style="text-align:right">
+        <div class="ride-amt">₹220</div>
+        <div class="ride-status done">Complete</div>
+      </div>
+    </div>
+    <div class="ride-item">
+      <div class="ride-ic">🛵</div>
+      <div class="ride-info">
+        <div class="ride-route">Rajouri Garden → Pitampura</div>
+        <div class="ride-meta">Bike · 8.1 km · 2 din pehle</div>
+      </div>
+      <div style="text-align:right">
+        <div class="ride-amt">₹63</div>
+        <div class="ride-status cancel">Cancel</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REFER PAGE -->
+<div class="page" id="pg-refer">
+  <div class="refer-hero">
+    <div style="font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:4px">Aapka Refer Reward</div>
+    <div class="refer-amt-big">₹500</div>
+    <div style="font-size:.8rem;color:rgba(255,255,255,.55)">Har successful refer par · Max 10 refers · Family bhi</div>
+  </div>
+  <div class="refer-code-box">
+    <div style="font-size:.72rem;color:rgba(255,255,255,.4);margin-bottom:6px">Aapka Referral Code</div>
+    <div class="refer-code" id="ref-code">ASAFIRST</div>
+    <button class="copy-btn" onclick="copyCode()">📋 Copy Code</button>
+  </div>
+  <div style="margin:0 16px">
+    <div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.05)">
+      <div style="font-size:.82rem;font-weight:700;margin-bottom:6px">Kaise kaam karta hai?</div>
+      <div style="font-size:.78rem;color:var(--g5);line-height:1.8">
+        1️⃣ Apna code share karo dost ko<br>
+        2️⃣ Woh pehli ride complete kare<br>
+        3️⃣ Aapko ₹500 ride credit milega!<br>
+        👨‍👩‍👧 Family members ko bhi refer kar sakte hain
+      </div>
+    </div>
+    <button onclick="shareRef()" style="width:100%;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;border-radius:14px;padding:14px;font-size:.9rem;font-weight:800;cursor:pointer">💬 WhatsApp par Share karo</button>
+  </div>
+</div>
+
+<!-- PROFILE PAGE -->
+<div class="page" id="pg-profile">
+  <div class="profile-header">
+    <div class="profile-av">👤</div>
+    <div class="profile-name">ASA RIDE User</div>
+    <div class="profile-phone">+91 XXXXX XXXXX</div>
+  </div>
+  <div onclick="toast2('Support: +91 97990 60101')" class="menu-item"><div class="menu-ic" style="background:#FFF3E0">💬</div><div class="menu-lbl">WhatsApp Support</div><div class="menu-arr">›</div></div>
+  <div onclick="showPage('pg-refer')" class="menu-item"><div class="menu-ic" style="background:#E8F7F0">🎁</div><div class="menu-lbl">Refer &amp; Earn ₹500</div><div class="menu-arr">›</div></div>
+  <div onclick="toast2('Coming soon!')" class="menu-item"><div class="menu-ic" style="background:#F0EDFB">🔔</div><div class="menu-lbl">Notifications</div><div class="menu-arr">›</div></div>
+  <div onclick="toast2('Terms: asaride.netlify.app')" class="menu-item"><div class="menu-ic" style="background:#f5f5f5">📋</div><div class="menu-lbl">Terms &amp; Conditions</div><div class="menu-arr">›</div></div>
+  <div onclick="window.open('https://wa.me/919799060101')" class="menu-item"><div class="menu-ic" style="background:#fee2e2">📞</div><div class="menu-lbl">Complaint: +91 78773 01391</div><div class="menu-arr">›</div></div>
+  <div style="padding:20px 16px;text-align:center;font-size:.72rem;color:#aaa">ASA RIDE v1.0 · ASA Group of Companies<br>asaride2026@gmail.com</div>
+</div>
+
+<!-- MAP / BOOKING OVERLAY -->
+<div id="map-overlay">
+  <div class="map-fake">
+    <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 400 500">
+      <rect width="400" height="500" fill="#e8f5e9"/>
+      <path d="M0 100 Q100 80 200 100 T400 100" fill="none" stroke="#a5d6a7" stroke-width="50" opacity=".4"/>
+      <path d="M0 280 Q150 260 300 280 T400 280" fill="none" stroke="#a5d6a7" stroke-width="38" opacity=".3"/>
+      <path d="M90 0 L90 500" stroke="#b3d9f5" stroke-width="40" opacity=".35"/>
+      <path d="M250 0 L250 500" stroke="#b3d9f5" stroke-width="30" opacity=".28"/>
+      <rect x="60" y="30" width="40" height="32" rx="5" fill="#81c784" opacity=".5"/>
+      <rect x="200" y="60" width="34" height="28" rx="4" fill="#64b5f6" opacity=".4"/>
+      <rect x="310" y="40" width="44" height="36" rx="5" fill="#81c784" opacity=".45"/>
+    </svg>
+    <div class="map-pin-pickup">📍</div>
+    <div class="map-pin-drop">🏁</div>
+    <div style="position:absolute;top:40%;left:34%;width:38%;height:3px;background:linear-gradient(90deg,#1B8A5A,#F38B00);transform:rotate(18deg);border-radius:3px"></div>
+    <div class="map-car-anim" id="map-car-icon">🛺</div>
+    <div style="position:absolute;bottom:200px;left:12px;right:12px;background:rgba(255,255,255,.93);border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 12px rgba(0,0,0,.1)">
+      <div style="font-size:.72rem;color:#1B8A5A;font-weight:600" id="map-loc-lbl">📍 Detecting location...</div>
+      <div style="font-size:.82rem;font-weight:900;color:#F38B00" id="map-dist-lbl">-- km</div>
+    </div>
+    <button class="map-close" onclick="closeMap()">✕</button>
+  </div>
+  <div class="map-bottom">
+    <div class="drv-found" id="drv-found-card" style="display:none">
+      <div class="drv-found-top">
+        <div class="drv-av2" id="drv-av-map">👨</div>
+        <div>
+          <div class="drv-nm2" id="drv-nm-map">Ramesh Kumar</div>
+          <div class="drv-stars2">★★★★★ (4.8)</div>
+          <div class="drv-veh2" id="drv-veh-map">🛺 Auto · MH 12 AB 3456</div>
+        </div>
+      </div>
+      <div class="otp-strip">
+        <div class="otp-lbl2">Driver ko yeh OTP dikhayein</div>
+        <div class="otp-num" id="otp-show">4782</div>
+      </div>
+      <div class="action-row">
+        <button class="act-btn act-call" onclick="callDriver()">📞 Call</button>
+        <button class="act-btn act-chat" onclick="toast2('Chat feature app mein available!')">💬 Chat</button>
+        <button class="act-btn act-cancel" onclick="cancelRide()">✕ Cancel</button>
+      </div>
+    </div>
+    <div id="searching-card">
+      <div style="text-align:center;padding:8px 0 12px">
+        <div style="font-size:1.5rem;margin-bottom:6px;animation:spin 1.5s linear infinite;display:inline-block">🔄</div>
+        <div style="font-size:.9rem;font-weight:700">Driver dhoondh rahe hain...</div>
+        <div style="font-size:.75rem;color:var(--g5);margin-top:4px" id="srch-sub">Aapki location ke paas available drivers</div>
+      </div>
+      <button onclick="closeMap()" style="width:100%;background:#fff;border:1.5px solid #e5e5e5;border-radius:12px;padding:12px;font-size:.85rem;font-weight:600;cursor:pointer;color:var(--g5)">Cancel</button>
+    </div>
+    <style>@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}</style>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-item active" id="nav-home" onclick="showPage('pg-home','nav-home')">
+    <div class="nav-ic">🏠</div><div class="nav-lbl">Home</div>
+  </div>
+  <div class="nav-item" id="nav-rides" onclick="showPage('pg-rides','nav-rides')">
+    <div class="nav-ic">🗺️</div><div class="nav-lbl">Rides</div>
+  </div>
+  <div class="nav-item" id="nav-refer" onclick="showPage('pg-refer','nav-refer')">
+    <div class="nav-ic">🎁</div><div class="nav-lbl">Refer</div>
+  </div>
+  <div class="nav-item" id="nav-profile" onclick="showPage('pg-profile','nav-profile')">
+    <div class="nav-ic">👤</div><div class="nav-lbl">Profile</div>
+  </div>
+</div>
+
+<script>
+// SPLASH
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    document.getElementById('splash').classList.add('hide');
+    setTimeout(()=>document.getElementById('splash').remove(),600);
+  },2000);
+  fetchGPS();
+  checkInstall();
+});
+
+// PWA INSTALL
+var deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredPrompt=e;
+  document.getElementById('install-banner').classList.add('show');
+});
+document.getElementById('install-btn').addEventListener('click',()=>{
+  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('install-banner').classList.remove('show');});}
+  else{toast2('Browser mein: Menu → Add to Home Screen!');}
+});
+function checkInstall(){
+  if(window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone)
+    document.getElementById('install-banner').classList.remove('show');
+}
+
+// GPS
+function fetchGPS(){
+  var el=document.getElementById('pickup-inp');
+  el.value='📡 Location detect ho rahi hai...';
+  if(!navigator.geolocation){el.value='Delhi, India';return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    fetch('https://nominatim.openstreetmap.org/reverse?lat='+pos.coords.latitude+'&lon='+pos.coords.longitude+'&format=json')
+      .then(r=>r.json()).then(d=>{
+        var a=d.address;
+        var addr=(a.road||a.suburb||a.neighbourhood||'Current Location')+', '+(a.city||a.town||a.state||'India');
+        el.value=addr;
+        document.getElementById('map-loc-lbl').textContent='📍 '+addr.substring(0,35)+'...';
+        calcFare();
+      }).catch(()=>el.value='Current Location');
+  },()=>{el.value='Location (GPS on karein)';});
+}
+
+// VEHICLE SELECT
+var curVeh='AUTO',rates={AUTO:13,BIKE:9,CAB:18,ER:11},discs={AUTO:15,BIKE:15,CAB:20,ER:15};
+var icons={AUTO:'🛺',BIKE:'🛵',CAB:'🚗',ER:'🛺'};
+function selVeh(v,el){
+  curVeh=v;
+  document.querySelectorAll('.vh-card').forEach(c=>{c.classList.remove('active');});
+  el.classList.add('active');
+  var mi=document.getElementById('map-car-icon');
+  if(mi)mi.textContent=icons[v];
+  calcFare();
+}
+
+// FARE CALC
+function calcFare(){
+  var drop=(document.getElementById('drop-inp')?.value||'').trim();
+  if(!drop){['fc-dist','fc-base','fc-disc','fc-total'].forEach(id=>{var e=document.getElementById(id);if(e)e.textContent='--';});return;}
+  var seed=0;for(var i=0;i<drop.length;i++)seed+=drop.charCodeAt(i);
+  var km=parseFloat((Math.max(1.5,Math.min(40,(seed%28)+2+(drop.length*.35)))+.02).toFixed(1));
+  var base=Math.round(rates[curVeh]*km);
+  var d=discs[curVeh];var disc=Math.round(base*d/100);var total=base-disc;
+  document.getElementById('fc-dist').textContent=km+' km';
+  document.getElementById('fc-base').textContent='₹'+base;
+  document.getElementById('fc-disc').textContent='-₹'+disc+' ('+d+'% off)';
+  document.getElementById('fc-total').textContent='₹'+total;
+  document.getElementById('map-dist-lbl').textContent=km+' km';
+}
+
+// BOOK
+function bookRide(){
+  var drop=(document.getElementById('drop-inp')?.value||'').trim();
+  if(!drop){toast2('Drop location daalo');return;}
+  var mi=document.getElementById('map-car-icon');
+  if(mi)mi.textContent=icons[curVeh];
+  document.getElementById('map-overlay').classList.add('show');
+  document.getElementById('otp-show').textContent=Math.floor(1000+Math.random()*9000);
+  setTimeout(()=>{
+    document.getElementById('searching-card').style.display='none';
+    document.getElementById('drv-found-card').style.display='block';
+    toast2('🎉 Driver mila! OTP dekho.');
+  },3500);
+}
+function closeMap(){
+  document.getElementById('map-overlay').classList.remove('show');
+  document.getElementById('searching-card').style.display='block';
+  document.getElementById('drv-found-card').style.display='none';
+}
+function callDriver(){window.location.href='tel:+919876543210';}
+function cancelRide(){if(confirm('Cancel karna chahte ho? ₹25/₹45 charge lagega next ride mein.')){closeMap();toast2('Ride cancel ki. ₹25/₹45 next ride mein add hoga.');}}
+
+// REFER
+function copyCode(){navigator.clipboard?.writeText('ASAFIRST');toast2('Code copy hua: ASAFIRST ✓');}
+function shareRef(){
+  var msg=encodeURIComponent('ASA RIDE use karo! India ka best ride platform.\n\nMera referral code: ASAFIRST\nPehli ride 15-20% off!\n\nDownload: https://asaride.netlify.app');
+  window.open('https://wa.me/?text='+msg,'_blank');
+}
+
+// NAV
+function showPage(pid,nid){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(pid)?.classList.add('active');
+  if(nid)document.getElementById(nid)?.classList.add('active');
+}
+
+// TOAST
+function toast2(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+</script>
+</body>
+</html>

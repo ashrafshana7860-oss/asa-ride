@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#8B7FD6"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="ASA Admin"/>
+<title>ASA RIDE — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--lv:#8B7FD6;--lvd:#6F5FC4;--lvl:#F0EDFB;--gr:#1B8A5A;--grd:#136B44;--grl:#E8F7F0;--sf:#F38B00;--sfd:#D97600;--sfl:#FFF3E0;--bk:#14110F;--n8:#1A1530;--n7:#241B3D;--wh:#fff;--g5:#666;--g9:#f0f0f0}
+body{font-family:'Inter',sans-serif;background:#0f0f1a;color:var(--wh);min-height:100vh}
+/* SIDEBAR */
+.sidebar{position:fixed;top:0;left:0;width:240px;height:100vh;background:linear-gradient(180deg,var(--n8),var(--n7));border-right:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;z-index:100}
+.sb-logo{padding:20px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px}
+.sb-logo-ic{width:36px;height:36px;background:linear-gradient(135deg,var(--sf),var(--lv));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.sb-logo-txt{font-size:.9rem;font-weight:800;color:#fff}
+.sb-logo-sub{font-size:.6rem;color:rgba(255,255,255,.4);margin-top:1px}
+.sb-nav{flex:1;padding:12px 8px;overflow-y:auto}
+.sb-section{font-size:.6rem;font-weight:700;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.8px;padding:10px 10px 4px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:all .2s;margin-bottom:2px}
+.sb-item:hover{background:rgba(255,255,255,.06)}
+.sb-item.active{background:rgba(139,127,214,.2);border:1px solid rgba(139,127,214,.3)}
+.sb-ic{font-size:1rem;flex-shrink:0;width:20px;text-align:center}
+.sb-lbl{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.7)}
+.sb-item.active .sb-lbl{color:var(--lv)}
+.sb-badge{background:var(--sf);color:#fff;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:100px;margin-left:auto}
+.sb-bottom{padding:14px;border-top:1px solid rgba(255,255,255,.07)}
+.sb-user{display:flex;align-items:center;gap:8px}
+.sb-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--sf),var(--lv));display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.sb-uname{font-size:.78rem;font-weight:700;color:#fff}
+.sb-urole{font-size:.62rem;color:rgba(255,255,255,.4)}
+/* MAIN */
+.main{margin-left:240px;padding:24px;min-height:100vh}
+/* TOP BAR */
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.page-title{font-size:1.4rem;font-weight:900;color:#fff}
+.page-sub{font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px}
+.tb-right{display:flex;gap:10px;align-items:center}
+.live-badge{display:flex;align-items:center;gap:6px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);border-radius:100px;padding:6px 14px;font-size:.72rem;font-weight:600;color:#4ade80}
+.live-dot{width:7px;height:7px;background:#4ade80;border-radius:50%;animation:livepulse 1.5s infinite}
+@keyframes livepulse{0%,100%{opacity:1}50%{opacity:.3}}
+.refresh-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:8px;padding:7px 14px;font-size:.75rem;font-weight:600;cursor:pointer}
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px;position:relative;overflow:hidden;transition:all .3s}
+.stat-card:hover{border-color:rgba(255,255,255,.15);transform:translateY(-2px)}
+.stat-card::before{content:'';position:absolute;top:-30px;right:-30px;width:80px;height:80px;border-radius:50%;opacity:.08}
+.stat-card.lv::before{background:var(--lv)}.stat-card.gr::before{background:var(--gr)}.stat-card.sf::before{background:var(--sf)}.stat-card.red::before{background:#ef4444}
+.stat-ic{font-size:1.5rem;margin-bottom:10px}
+.stat-val{font-size:1.8rem;font-weight:900;color:#fff;margin-bottom:4px}
+.stat-lbl{font-size:.72rem;color:rgba(255,255,255,.4);font-weight:500}
+.stat-change{font-size:.68rem;margin-top:6px;font-weight:700}
+.stat-change.up{color:#4ade80}.stat-change.dn{color:#f87171}
+/* GRID 2 COL */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.grid3{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:24px}
+/* CARD */
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px}
+.card-title{font-size:.85rem;font-weight:700;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-title span{font-size:.65rem;color:rgba(255,255,255,.35);font-weight:500;margin-left:auto}
+/* LIVE RIDES TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:.65rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.5px;padding:0 10px 10px;text-align:left}
+td{font-size:.78rem;color:rgba(255,255,255,.75);padding:10px;border-top:1px solid rgba(255,255,255,.05)}
+tr:hover td{background:rgba(255,255,255,.03)}
+.status-pill{padding:3px 10px;border-radius:100px;font-size:.65rem;font-weight:700;display:inline-block}
+.status-pill.active{background:rgba(74,222,128,.15);color:#4ade80}
+.status-pill.searching{background:rgba(243,139,0,.15);color:var(--sf)}
+.status-pill.complete{background:rgba(139,127,214,.15);color:var(--lv)}
+.status-pill.cancel{background:rgba(239,68,68,.15);color:#f87171}
+/* MINI CHART */
+.mini-chart{display:flex;align-items:flex-end;gap:4px;height:60px;padding:0 2px}
+.bar{flex:1;background:rgba(139,127,214,.3);border-radius:4px 4px 0 0;transition:all .3s;cursor:pointer;position:relative}
+.bar:hover{background:var(--lv)}
+.bar::after{content:attr(data-val);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);font-size:.58rem;color:rgba(255,255,255,.5);white-space:nowrap;display:none}
+.bar:hover::after{display:block}
+.chart-labels{display:flex;gap:4px;margin-top:6px}
+.chart-lbl{flex:1;text-align:center;font-size:.58rem;color:rgba(255,255,255,.25)}
+/* DRIVER LIST */
+.driver-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.driver-item:last-child{border-bottom:none}
+.drv-av-sm{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--gr),var(--grd));display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.drv-nm-sm{font-size:.8rem;font-weight:700;color:#fff;margin-bottom:2px}
+.drv-meta-sm{font-size:.68rem;color:rgba(255,255,255,.4)}
+.drv-earn-sm{font-size:.85rem;font-weight:800;color:#4ade80;margin-left:auto;flex-shrink:0}
+/* NOTIFICATIONS */
+.notif-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.notif-item:last-child{border-bottom:none}
+.notif-ic{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.notif-txt{font-size:.75rem;color:rgba(255,255,255,.7);line-height:1.5;margin-bottom:2px}
+.notif-time{font-size:.65rem;color:rgba(255,255,255,.3)}
+/* PAGES */
+.admin-page{display:none}.admin-page.active{display:block}
+/* MAP PLACEHOLDER */
+.map-placeholder{background:linear-gradient(135deg,#1a2e1a,#1a2e44);border-radius:12px;height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.map-dots{position:absolute;inset:0}
+.map-dot{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--sf);animation:dotpulse 2s ease-in-out infinite}
+@keyframes dotpulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+/* FORMS */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-group label{font-size:.72rem;font-weight:600;color:rgba(255,255,255,.45);display:block;margin-bottom:5px}
+.form-input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 12px;font-size:.82rem;color:#fff;outline:none;font-family:'Inter',sans-serif;transition:border-color .2s}
+.form-input:focus{border-color:var(--lv)}
+.form-input option{background:#1a1530;color:#fff}
+.save-btn{background:linear-gradient(135deg,var(--lv),var(--lvd));color:#fff;border:none;border-radius:10px;padding:11px 24px;font-size:.82rem;font-weight:700;cursor:pointer}
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:#333;color:#fff;padding:12px 22px;border-radius:12px;font-size:.8rem;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.toast.show{opacity:1}
+/* RESPONSIVE */
+@media(max-width:1100px){.stats-grid{grid-template-columns:repeat(2,1fr)}.grid2,.grid3{grid-template-columns:1fr}}
+@media(max-width:768px){.sidebar{width:60px}.sb-lbl,.sb-logo-txt,.sb-logo-sub,.sb-section,.sb-badge,.sb-uname,.sb-urole{display:none}.sb-logo{padding:14px;justify-content:center}.sb-item{justify-content:center;padding:12px 8px}.main{margin-left:60px}.stats-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-ic">🚗</div>
+    <div><div class="sb-logo-txt">ASA RIDE</div><div class="sb-logo-sub">Admin Panel</div></div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-section">Main</div>
+    <div class="sb-item active" onclick="showAdmin('pg-dash',this)"><div class="sb-ic">📊</div><div class="sb-lbl">Dashboard</div></div>
+    <div class="sb-item" onclick="showAdmin('pg-rides',this)"><div class="sb-ic">🗺️</div><div class="sb-lbl">Live Rides</div><div class="sb-badge" id="live-count">0</div></div>
+    <div class="sb-item" onclick="showAdmin('pg-drivers',this)"><div class="sb-ic">🚗</div><div class="sb-lbl">Drivers</div></div>
+    <div class="sb-item" onclick="showAdmin('pg-customers',this)"><div class="sb-ic">👥</div><div class="sb-lbl">Customers</div></div>
+    <div class="sb-section">Finance</div>
+    <div class="sb-item" onclick="showAdmin('pg-earnings',this)"><div class="sb-ic">💰</div><div class="sb-lbl">Earnings</div></div>
+    <div class="sb-item" onclick="showAdmin('pg-settlements',this)"><div class="sb-ic">🏦</div><div class="sb-lbl">Settlements</div></div>
+    <div class="sb-section">Settings</div>
+    <div class="sb-item" onclick="showAdmin('pg-settings',this)"><div class="sb-ic">⚙️</div><div class="sb-lbl">Settings</div></div>
+    <div class="sb-item" onclick="showAdmin('pg-notifs',this)"><div class="sb-ic">🔔</div><div class="sb-lbl">Notifications</div><div class="sb-badge">3</div></div>
+  </div>
+  <div class="sb-bottom">
+    <div class="sb-user">
+      <div class="sb-av">👑</div>
+      <div><div class="sb-uname">ASA Admin</div><div class="sb-urole">Super Admin</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- DASHBOARD -->
+  <div class="admin-page active" id="pg-dash">
+    <div class="topbar">
+      <div><div class="page-title">Dashboard</div><div class="page-sub">ASA RIDE — Real-time overview</div></div>
+      <div class="tb-right">
+        <div class="live-badge"><div class="live-dot"></div>Live</div>
+        <button class="refresh-btn" onclick="refreshData()">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card lv">
+        <div class="stat-ic">🗺️</div>
+        <div class="stat-val" id="s-live-rides">0</div>
+        <div class="stat-lbl">Live Rides Abhi</div>
+        <div class="stat-change up" id="s-live-ch">↑ Updating...</div>
+      </div>
+      <div class="stat-card gr">
+        <div class="stat-ic">🚗</div>
+        <div class="stat-val" id="s-online-drivers">0</div>
+        <div class="stat-lbl">Online Drivers</div>
+        <div class="stat-change up" id="s-drv-ch">↑ Active</div>
+      </div>
+      <div class="stat-card sf">
+        <div class="stat-ic">💰</div>
+        <div class="stat-val" id="s-today-rev">₹0</div>
+        <div class="stat-lbl">Aaj ki Revenue</div>
+        <div class="stat-change up">↑ 28% company share</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-ic">❌</div>
+        <div class="stat-val" id="s-cancel">0</div>
+        <div class="stat-lbl">Cancellations Aaj</div>
+        <div class="stat-change dn" id="s-cancel-ch">₹55 each collected</div>
+      </div>
+    </div>
+
+    <!-- SECONDARY STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-ic">👥</div>
+        <div class="stat-val" id="s-total-cust">0</div>
+        <div class="stat-lbl">Total Customers</div>
+        <div class="stat-change up">↑ Growing</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ic">🛺</div>
+        <div class="stat-val" id="s-total-rides">0</div>
+        <div class="stat-lbl">Total Rides (All time)</div>
+        <div class="stat-change up">↑ Pan India</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ic">⭐</div>
+        <div class="stat-val">4.7</div>
+        <div class="stat-lbl">Avg Driver Rating</div>
+        <div class="stat-change up">↑ Excellent</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ic">🎁</div>
+        <div class="stat-val" id="s-refer">0</div>
+        <div class="stat-lbl">Refer Rewards Paid</div>
+        <div class="stat-change">₹500 per refer</div>
+      </div>
+    </div>
+
+    <div class="grid3">
+      <!-- REVENUE CHART -->
+      <div class="card">
+        <div class="card-title">📈 Weekly Revenue <span>Last 7 days</span></div>
+        <div class="mini-chart" id="rev-chart"></div>
+        <div class="chart-labels" id="chart-lbls"></div>
+        <div style="display:flex;gap:16px;margin-top:14px">
+          <div style="font-size:.72rem;color:rgba(255,255,255,.4)">🟣 Total Revenue</div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.4)">28% Company share</div>
+        </div>
+      </div>
+      <!-- VEHICLE MIX -->
+      <div class="card">
+        <div class="card-title">🛺 Vehicle Mix</div>
+        <div id="veh-mix"></div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <!-- LIVE RIDES MAP -->
+      <div class="card">
+        <div class="card-title">📍 Live Map</div>
+        <div class="map-placeholder">
+          <div class="map-dots" id="map-dots"></div>
+          <div style="font-size:1.5rem;margin-bottom:6px;z-index:1">🗺️</div>
+          <div style="font-size:.82rem;font-weight:700;color:#fff;z-index:1">Live GPS Tracking</div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.4);margin-top:4px;z-index:1" id="map-count-lbl">0 drivers online</div>
+        </div>
+      </div>
+      <!-- NOTIFICATIONS -->
+      <div class="card">
+        <div class="card-title">🔔 Alerts <span>Live</span></div>
+        <div id="notif-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE RIDES PAGE -->
+  <div class="admin-page" id="pg-rides">
+    <div class="topbar">
+      <div><div class="page-title">Live Rides</div><div class="page-sub">Real-time ride tracking</div></div>
+      <div class="tb-right"><div class="live-badge"><div class="live-dot"></div>Live</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🗺️ All Active Rides</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Ride ID</th><th>Customer</th><th>Driver</th><th>Vehicle</th><th>Route</th><th>Distance</th><th>Fare</th><th>Driver 72%</th><th>Status</th></tr></thead>
+          <tbody id="rides-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRIVERS PAGE -->
+  <div class="admin-page" id="pg-drivers">
+    <div class="topbar">
+      <div><div class="page-title">Driver Management</div><div class="page-sub">Saare drivers — active aur pending</div></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card gr"><div class="stat-ic">✅</div><div class="stat-val" id="d-active">0</div><div class="stat-lbl">Active Drivers</div></div>
+      <div class="stat-card sf"><div class="stat-ic">⏳</div><div class="stat-val" id="d-pending">0</div><div class="stat-lbl">Pending Approval</div></div>
+      <div class="stat-card lv"><div class="stat-ic">🛺</div><div class="stat-val" id="d-online">0</div><div class="stat-lbl">Online Now</div></div>
+      <div class="stat-card red"><div class="stat-ic">⛔</div><div class="stat-val">0</div><div class="stat-lbl">Suspended</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🚗 Driver List</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Driver</th><th>Vehicle</th><th>City</th><th>Rides</th><th>Rating</th><th>Aaj ki Kamai</th><th>IMEI</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="drivers-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOMERS PAGE -->
+  <div class="admin-page" id="pg-customers">
+    <div class="topbar"><div><div class="page-title">Customers</div><div class="page-sub">Saare registered customers</div></div></div>
+    <div class="card">
+      <div class="card-title">👥 Customer List</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Phone</th><th>City</th><th>Total Rides</th><th>Total Spent</th><th>Refers</th><th>Joined</th></tr></thead>
+          <tbody id="cust-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- EARNINGS PAGE -->
+  <div class="admin-page" id="pg-earnings">
+    <div class="topbar"><div><div class="page-title">Earnings & Revenue</div><div class="page-sub">72% Driver · 28% Company</div></div></div>
+    <div class="stats-grid">
+      <div class="stat-card sf"><div class="stat-ic">💰</div><div class="stat-val" id="e-total">₹0</div><div class="stat-lbl">Total Revenue (All)</div></div>
+      <div class="stat-card gr"><div class="stat-ic">🚗</div><div class="stat-val" id="e-drv">₹0</div><div class="stat-lbl">Driver Earnings (72%)</div></div>
+      <div class="stat-card lv"><div class="stat-ic">🏢</div><div class="stat-val" id="e-co">₹0</div><div class="stat-lbl">Company Revenue (28%)</div></div>
+      <div class="stat-card"><div class="stat-ic">🎁</div><div class="stat-val">₹0</div><div class="stat-lbl">Refer Bonuses Paid</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">💰 Top Earning Drivers</div>
+        <div id="top-drivers"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 Revenue Breakdown</div>
+        <div id="rev-break"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTLEMENTS -->
+  <div class="admin-page" id="pg-settlements">
+    <div class="topbar"><div><div class="page-title">Settlements</div><div class="page-sub">Same-day driver payments</div></div></div>
+    <div class="card">
+      <div class="card-title">🏦 Pending Settlements</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Driver</th><th>Rides</th><th>Total Fare</th><th>Driver 72%</th><th>UPI ID</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="settle-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="admin-page" id="pg-settings">
+    <div class="topbar"><div><div class="page-title">Settings</div><div class="page-sub">Business rules configure karein</div></div></div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">💰 Commission Settings</div>
+        <div class="form-row">
+          <div class="form-group"><label>Driver Commission %</label><input class="form-input" value="72" type="number"/></div>
+          <div class="form-group"><label>Company Commission %</label><input class="form-input" value="28" type="number"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Cancellation Charge (₹)</label><input class="form-input" value="55" type="number"/></div>
+          <div class="form-group"><label>1st Ride Discount %</label><input class="form-input" value="15" type="number"/></div>
+        </div>
+        <button class="save-btn" onclick="toast2('Settings saved! ✓')">Save Changes</button>
+      </div>
+      <div class="card">
+        <div class="card-title">🎁 Refer & Earn Settings</div>
+        <div class="form-row">
+          <div class="form-group"><label>Customer Refer Reward (₹)</label><input class="form-input" value="500" type="number"/></div>
+          <div class="form-group"><label>Max Refers per Customer</label><input class="form-input" value="10" type="number"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Driver Refer Reward (₹/month)</label><input class="form-input" value="500" type="number"/></div>
+          <div class="form-group"><label>Min Rides for Bonus</label><input class="form-input" value="100" type="number"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Cab CNG Bonus (₹)</label><input class="form-input" value="200" type="number"/></div>
+          <div class="form-group"><label>Bike Petrol Bonus (₹)</label><input class="form-input" value="150" type="number"/></div>
+        </div>
+        <button class="save-btn" onclick="toast2('Refer settings saved! ✓')">Save Changes</button>
+      </div>
+      <div class="card">
+        <div class="card-title">🛺 Joining Fees</div>
+        <div class="form-row">
+          <div class="form-group"><label>Cab Joining (₹)</label><input class="form-input" value="3500" type="number"/></div>
+          <div class="form-group"><label>Auto Joining (₹)</label><input class="form-input" value="2500" type="number"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>E-Rickshaw Joining (₹)</label><input class="form-input" value="1500" type="number"/></div>
+          <div class="form-group"><label>Bike Joining (₹)</label><input class="form-input" value="1000" type="number"/></div>
+        </div>
+        <button class="save-btn" onclick="toast2('Joining fees saved! ✓')">Save Changes</button>
+      </div>
+      <div class="card">
+        <div class="card-title">📞 Contact Settings</div>
+        <div class="form-group" style="margin-bottom:12px"><label>WhatsApp Support</label><input class="form-input" value="+91 97990 60101"/></div>
+        <div class="form-group" style="margin-bottom:12px"><label>Complaint Number</label><input class="form-input" value="+91 78773 01391"/></div>
+        <div class="form-group" style="margin-bottom:12px"><label>Email</label><input class="form-input" value="asaride2026@gmail.com"/></div>
+        <div class="form-group" style="margin-bottom:12px"><label>UPI ID (Federal Bank)</label><input class="form-input" value="rfs2025@fbl"/></div>
+        <button class="save-btn" onclick="toast2('Contact settings saved! ✓')">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div class="admin-page" id="pg-notifs">
+    <div class="topbar"><div><div class="page-title">Notifications & Alerts</div><div class="page-sub">Live system alerts</div></div></div>
+    <div class="card">
+      <div class="card-title">🔔 All Alerts</div>
+      <div id="all-notifs"></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// LIVE DATA SIMULATION
+var liveData = {
+  liveRides: 0, onlineDrivers: 0, todayRev: 0,
+  cancels: 0, totalCust: 0, totalRides: 0, refers: 0
+};
+
+var CITIES = ['Delhi','Mumbai','Jaipur','Pune','Hyderabad','Bengaluru','Lucknow','Ahmedabad','Surat','Nagpur'];
+var NAMES_DRV = ['Ramesh K.','Suresh S.','Ajay P.','Mohan D.','Ravi T.','Vijay M.','Anil K.','Deepak R.'];
+var NAMES_CUST = ['Priya S.','Amit V.','Neha R.','Raj K.','Sona G.','Vikram P.','Anita M.','Rahul T.'];
+var VEHICLES = ['🛺 Auto','🛵 Bike','🚗 Cab','🛺 E-Rick'];
+var ROUTES = [
+  ['Connaught Place','Lajpat Nagar'],['Andheri West','Bandra'],
+  ['MG Road','Koramangala'],['MI Road','Vaishali Nagar'],
+  ['Saket','Noida Sec 18'],['Hitech City','Begumpet']
+];
+var STATUSES = ['active','active','active','searching','complete','cancel'];
+
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function fmtCur(n){return '₹'+n.toLocaleString('en-IN');}
+
+function refreshData(){
+  liveData.liveRides = rnd(3,18);
+  liveData.onlineDrivers = rnd(12,85);
+  liveData.todayRev += rnd(800,4500);
+  liveData.cancels += rnd(0,3);
+  liveData.totalCust = rnd(280,950);
+  liveData.totalRides += rnd(5,30);
+  liveData.refers += rnd(0,5);
+
+  document.getElementById('s-live-rides').textContent = liveData.liveRides;
+  document.getElementById('s-online-drivers').textContent = liveData.onlineDrivers;
+  document.getElementById('s-today-rev').textContent = fmtCur(liveData.todayRev);
+  document.getElementById('s-cancel').textContent = liveData.cancels;
+  document.getElementById('s-total-cust').textContent = liveData.totalCust;
+  document.getElementById('s-total-rides').textContent = liveData.totalRides;
+  document.getElementById('s-refer').textContent = liveData.refers;
+  document.getElementById('live-count').textContent = liveData.liveRides;
+  document.getElementById('map-count-lbl').textContent = liveData.onlineDrivers + ' drivers online';
+
+  // Earnings
+  var drv = Math.round(liveData.todayRev * .72);
+  var co = Math.round(liveData.todayRev * .28);
+  var ei = document.getElementById('e-total'); if(ei) ei.textContent = fmtCur(liveData.todayRev);
+  var ed = document.getElementById('e-drv'); if(ed) ed.textContent = fmtCur(drv);
+  var ec = document.getElementById('e-co'); if(ec) ec.textContent = fmtCur(co);
+
+  // Driver counts
+  var da = document.getElementById('d-active'); if(da) da.textContent = liveData.onlineDrivers + rnd(10,40);
+  var dp = document.getElementById('d-pending'); if(dp) dp.textContent = rnd(2,12);
+  var dl = document.getElementById('d-online'); if(dl) dl.textContent = liveData.onlineDrivers;
+
+  buildRidesTable();
+  buildDriversTable();
+  buildCustomersTable();
+  buildSettlements();
+  buildChart();
+  buildVehMix();
+  buildMapDots();
+  buildTopDrivers();
+  buildNotifs();
+  buildRevBreak();
+  buildAllNotifs();
+  toast2('🔄 Data refreshed!');
+}
+
+function buildRidesTable(){
+  var tb = document.getElementById('rides-tbody');
+  if(!tb) return;
+  var rows = '';
+  for(var i=0;i<liveData.liveRides;i++){
+    var r = ROUTES[rnd(0,ROUTES.length-1)];
+    var km = (rnd(20,150)/10).toFixed(1);
+    var veh = VEHICLES[rnd(0,3)];
+    var rate = veh.includes('Auto')?13:veh.includes('Bike')?9:veh.includes('Cab')?18:11;
+    var fare = Math.round(rate*km);
+    var drv72 = Math.round(fare*.72);
+    var st = STATUSES[rnd(0,STATUSES.length-1)];
+    rows += '<tr><td style="color:var(--lv);font-weight:700">#ASA'+String(1000+i).padStart(4,'0')+'</td><td>'+NAMES_CUST[rnd(0,NAMES_CUST.length-1)]+'</td><td>'+NAMES_DRV[rnd(0,NAMES_DRV.length-1)]+'</td><td>'+veh+'</td><td>'+r[0]+'<br><span style="color:rgba(255,255,255,.4);font-size:.65rem">→ '+r[1]+'</span></td><td>'+km+' km</td><td style="color:var(--sf);font-weight:700">'+fmtCur(fare)+'</td><td style="color:#4ade80;font-weight:700">'+fmtCur(drv72)+'</td><td><span class="status-pill '+st+'">'+st+'</span></td></tr>';
+  }
+  tb.innerHTML = rows || '<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:20px">Abhi koi live ride nahi</td></tr>';
+}
+
+function buildDriversTable(){
+  var tb = document.getElementById('drivers-tbody');
+  if(!tb) return;
+  var rows = '';
+  for(var i=0;i<8;i++){
+    var earn = fmtCur(rnd(200,2800));
+    var rides = rnd(0,25);
+    var city = CITIES[rnd(0,CITIES.length-1)];
+    var veh = VEHICLES[rnd(0,3)];
+    var imei = '86****'+rnd(1000,9999);
+    var st = rnd(0,4)>0?'active':'pending';
+    rows += '<tr><td><div style="font-weight:700">'+NAMES_DRV[i%NAMES_DRV.length]+'</div><div style="font-size:.65rem;color:rgba(255,255,255,.35)">+91 9'+rnd(6,9)+'XXXXXX</div></td><td>'+veh+'</td><td>'+city+'</td><td>'+rides+'</td><td>'+( rnd(38,50)/10).toFixed(1)+' ⭐</td><td style="color:#4ade80;font-weight:700">'+earn+'</td><td style="font-size:.68rem;color:rgba(255,255,255,.4)">'+imei+'</td><td><span class="status-pill '+(st==='active'?'active':'searching')+'">'+st+'</span></td><td><button onclick="toast2(\'Driver action taken\')" style="background:var(--lv);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:.65rem;cursor:pointer">Manage</button></td></tr>';
+  }
+  tb.innerHTML = rows;
+}
+
+function buildCustomersTable(){
+  var tb = document.getElementById('cust-tbody');
+  if(!tb) return;
+  var rows = '';
+  for(var i=0;i<8;i++){
+    var rides = rnd(1,50);
+    var spent = fmtCur(rnd(100,8000));
+    var refs = rnd(0,10);
+    rows += '<tr><td style="font-weight:700">'+NAMES_CUST[i%NAMES_CUST.length]+'</td><td style="color:rgba(255,255,255,.5)">+91 9XXXXXXX'+rnd(10,99)+'</td><td>'+CITIES[rnd(0,CITIES.length-1)]+'</td><td>'+rides+'</td><td style="color:var(--sf);font-weight:700">'+spent+'</td><td style="color:#4ade80">'+refs+' (₹'+(refs*500)+')</td><td style="color:rgba(255,255,255,.35);font-size:.7rem">July 2025</td></tr>';
+  }
+  tb.innerHTML = rows;
+}
+
+function buildSettlements(){
+  var tb = document.getElementById('settle-tbody');
+  if(!tb) return;
+  var rows = '';
+  for(var i=0;i<6;i++){
+    var rides = rnd(3,20);
+    var fare = rnd(500,8000);
+    var drv = Math.round(fare*.72);
+    rows += '<tr><td style="font-weight:700">'+NAMES_DRV[i%NAMES_DRV.length]+'</td><td>'+rides+'</td><td>'+fmtCur(fare)+'</td><td style="color:#4ade80;font-weight:800">'+fmtCur(drv)+'</td><td style="color:rgba(255,255,255,.5);font-size:.72rem">rfs2025@fbl</td><td><span class="status-pill searching">Pending</span></td><td><button onclick="toast2(\'Payment processed! ✓\')" style="background:var(--gr);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:.65rem;cursor:pointer">Pay Now</button></td></tr>';
+  }
+  tb.innerHTML = rows;
+}
+
+function buildChart(){
+  var chart = document.getElementById('rev-chart');
+  var lbls = document.getElementById('chart-lbls');
+  if(!chart) return;
+  var days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var vals = days.map(()=>rnd(1200,8500));
+  var max = Math.max(...vals);
+  chart.innerHTML = vals.map((v,i)=>'<div class="bar" style="height:'+Math.round((v/max)*56)+'px" data-val="₹'+v+'"></div>').join('');
+  if(lbls) lbls.innerHTML = days.map(d=>'<div class="chart-lbl">'+d+'</div>').join('');
+}
+
+function buildVehMix(){
+  var el = document.getElementById('veh-mix');
+  if(!el) return;
+  var mix = [{ic:'🛺',nm:'Auto',pct:rnd(30,45)},{ic:'🚗',nm:'Cab',pct:rnd(20,35)},{ic:'🛵',nm:'Bike',pct:rnd(15,25)},{ic:'🛺',nm:'E-Rick',pct:rnd(5,15)}];
+  el.innerHTML = mix.map(v=>'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="font-size:1.2rem;width:28px">'+v.ic+'</div><div style="flex:1"><div style="font-size:.75rem;font-weight:600;color:#fff;margin-bottom:4px">'+v.nm+'</div><div style="height:6px;background:rgba(255,255,255,.1);border-radius:100px;overflow:hidden"><div style="height:100%;width:'+v.pct+'%;background:linear-gradient(90deg,var(--lv),var(--sf));border-radius:100px"></div></div></div><div style="font-size:.72rem;font-weight:700;color:rgba(255,255,255,.5);width:30px;text-align:right">'+v.pct+'%</div></div>').join('');
+}
+
+function buildMapDots(){
+  var el = document.getElementById('map-dots');
+  if(!el) return;
+  var dots = '';
+  for(var i=0;i<liveData.onlineDrivers;i++){
+    var l=rnd(10,85),t=rnd(15,75),d=rnd(0,2000);
+    var colors=['#F38B00','#4ade80','#8B7FD6'];
+    dots += '<div class="map-dot" style="left:'+l+'%;top:'+t+'%;animation-delay:'+d+'ms;background:'+colors[i%3]+'"></div>';
+  }
+  el.innerHTML = dots;
+}
+
+function buildTopDrivers(){
+  var el = document.getElementById('top-drivers');
+  if(!el) return;
+  var html = '';
+  for(var i=0;i<5;i++){
+    var earn = rnd(1500,6000);
+    html += '<div class="driver-item"><div class="drv-av-sm">'+['👨','👦','👴','🧑','👱'][i]+'</div><div><div class="drv-nm-sm">'+NAMES_DRV[i]+'</div><div class="drv-meta-sm">'+CITIES[rnd(0,CITIES.length-1)]+' · '+rnd(8,35)+' rides today</div></div><div class="drv-earn-sm">'+fmtCur(earn)+'</div></div>';
+  }
+  el.innerHTML = html;
+}
+
+function buildRevBreak(){
+  var el = document.getElementById('rev-break');
+  if(!el) return;
+  var total = liveData.todayRev||rnd(5000,25000);
+  var items = [
+    {lbl:'Total Fares',val:fmtCur(total),color:'#fff'},
+    {lbl:'Driver (72%)',val:fmtCur(Math.round(total*.72)),color:'#4ade80'},
+    {lbl:'Company (28%)',val:fmtCur(Math.round(total*.28)),color:'var(--sf)'},
+    {lbl:'Cancellation Fees',val:fmtCur(liveData.cancels*55),color:'#f87171'},
+    {lbl:'Refer Rewards Paid',val:fmtCur(liveData.refers*500),color:'var(--lv)'}
+  ];
+  el.innerHTML = items.map(i=>'<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)"><span style="font-size:.78rem;color:rgba(255,255,255,.5)">'+i.lbl+'</span><span style="font-size:.82rem;font-weight:800;color:'+i.color+'">'+i.val+'</span></div>').join('');
+}
+
+var notifData = [
+  {ic:'🚗',bg:'#E8F7F0',msg:'Naya driver register hua — Jaipur',time:'2 min ago'},
+  {ic:'❌',bg:'#fee2e2',msg:'Cancellation: Ride #ASA1042 — ₹55 charge',time:'5 min ago'},
+  {ic:'🎁',bg:'#FFF3E0',msg:'Refer reward claimed — ₹500 paid',time:'12 min ago'},
+  {ic:'💰',bg:'#F0EDFB',msg:'Settlement done — Ramesh K. ₹1,440',time:'18 min ago'},
+  {ic:'⭐',bg:'#E8F7F0',msg:'New 5-star review from Priya S.',time:'25 min ago'},
+];
+
+function buildNotifs(){
+  var el = document.getElementById('notif-list');
+  if(!el) return;
+  el.innerHTML = notifData.slice(0,4).map(n=>'<div class="notif-item"><div class="notif-ic" style="background:'+n.bg+'">'+n.ic+'</div><div><div class="notif-txt">'+n.msg+'</div><div class="notif-time">'+n.time+'</div></div></div>').join('');
+}
+function buildAllNotifs(){
+  var el = document.getElementById('all-notifs');
+  if(!el) return;
+  el.innerHTML = notifData.map(n=>'<div class="notif-item"><div class="notif-ic" style="background:'+n.bg+'">'+n.ic+'</div><div><div class="notif-txt">'+n.msg+'</div><div class="notif-time">'+n.time+'</div></div></div>').join('');
+}
+
+// NAV
+function showAdmin(pid,el){
+  document.querySelectorAll('.admin-page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('active'));
+  document.getElementById(pid)?.classList.add('active');
+  el?.classList.add('active');
+}
+
+function toast2(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+// INIT
+window.addEventListener('load',()=>{
+  refreshData();
+  setInterval(refreshData, 15000);
+});
+</script>
+</body>
+</html>
