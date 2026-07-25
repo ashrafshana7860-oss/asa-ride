@@ -16,7 +16,16 @@ const supabase = createClient(
 );
 
 // ── Middleware ───────────────────────────────────────────────
-app.use(cors({ origin: '*' }));
+app.use(cors({
+  origin: [
+    'https://asaride.netlify.app',
+    'http://localhost:3000',
+    'http://127.0.0.1:5500',
+    /\.netlify\.app$/,
+    /\.railway\.app$/
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
