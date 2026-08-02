@@ -194,7 +194,7 @@ app.post('/api/driver/register', async function(req, res) {
       commission_pct: comm[vehicle_type] || 12,
       status: 'pending',
       rides_count: 0,
-      launch_rides_remaining: 100,
+      launch_rides_remaining: 5,
       wallet_balance: 0,
       is_online: false,
       created_at: new Date().toISOString()
@@ -444,6 +444,167 @@ app.post('/api/refer/apply', auth, async function(req, res) {
     await supabase.from('referrals').insert({ referrer_id: referrer.id, referred_id: req.user.id, reward_amount: 500, status: 'pending' });
     res.json({ success: true, message: 'Refer apply hua! Pehli ride complete hone par reward milega.' });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ============================================================
+// KM VERIFICATION SYSTEM - Add to server.js
+// Flow: Customer books → Admin verifies km on Google Maps → 
+//       Approves/Rejects → Fare updates → Driver gets correct amount
+// ============================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+app.post('/api/ride/verify-km', auth, async function(req, res) {
+  try {
+    var { pickup, drop, pickup_lat, pickup_lng, drop_lat, drop_lng, vehicle_type, system_km } = req.body;
+
+    // Generate Google Maps directions URL for admin
+    var gmUrl = 'https://www.google.com/maps/dir/?api=1' +
+      '&origin=' + pickup_lat + ',' + pickup_lng +
+      '&destination=' + drop_lat + ',' + drop_lng +
+      '&travelmode=driving';
+
+    var { data, error } = await supabase.from('km_verifications').insert({
+      customer_id: req.user.id,
+      pickup_address: pickup,
+      drop_address: drop,
+      pickup_lat, pickup_lng,
+      drop_lat, drop_lng,
+      system_km,
+      vehicle_type,
+      status: 'pending',
+      google_maps_url: gmUrl,
+      created_at: new Date().toISOString()
+    }).select().single();
+
+    if (error) throw error;
+
+    // Push notification to admin
+    await pushToGroup('admin', {
+      title: 'New KM Verification Request',
+      body: pickup + ' → ' + drop + ' | System: ' + system_km + 'km | ' + vehicle_type,
+      url: '/admin_dashboard.html?tab=km-verify',
+      verify_id: data.id
+    });
+
+    res.json({ success: true, verify_id: data.id, status: 'pending', google_maps_url: gmUrl });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+
+app.get('/api/ride/verify-status/:id', auth, async function(req, res) {
+  try {
+    var { data } = await supabase.from('km_verifications')
+      .select('*').eq('id', req.params.id).single();
+    if (!data) return res.status(404).json({ error: 'Not found' });
+
+    if (data.status === 'approved') {
+      // Calculate fare with admin-verified km
+      var rates = { BIKE:10, AUTO:14, MINI_CAB:20, SEDAN:20, SUV:22, PREMIUM:28, ER:12, CAB:20 };
+      var comms = { BIKE:10, AUTO:12, MINI_CAB:15, SEDAN:15, SUV:15, PREMIUM:18, ER:12, CAB:15 };
+      var rate = rates[data.vehicle_type] || 14;
+      var comm = comms[data.vehicle_type] || 12;
+      var base = Math.round(rate * data.admin_km);
+      var min_fare = { BIKE:40, AUTO:60, CAB:100, ER:50 };
+      if (base < (min_fare[data.vehicle_type] || 60)) base = (min_fare[data.vehicle_type] || 60);
+      var platform = Math.round(base * comm / 100);
+      var driver_earn = base - platform;
+
+      res.json({
+        status: 'approved',
+        admin_km: data.admin_km,
+        base_fare: base,
+        driver_earn,
+        platform_fee: platform,
+        admin_note: data.admin_note,
+        google_maps_url: data.google_maps_url
+      });
+    } else {
+      res.json({ status: data.status, system_km: data.system_km, admin_note: data.admin_note });
+    }
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+
+app.post('/api/admin/km-verify/approve', adminAuth, async function(req, res) {
+  try {
+    var { verify_id, admin_km, note } = req.body;
+    var { data: v } = await supabase.from('km_verifications')
+      .select('*').eq('id', verify_id).single();
+
+    await supabase.from('km_verifications').update({
+      admin_km: parseFloat(admin_km),
+      status: 'approved',
+      admin_note: note || 'Verified on Google Maps',
+      verified_at: new Date().toISOString()
+    }).eq('id', verify_id);
+
+    // Push to customer - fare updated
+    if (v && v.customer_id) {
+      var rates = { BIKE:10, AUTO:14, CAB:20, ER:12 };
+      var base = Math.round((rates[v.vehicle_type]||14) * parseFloat(admin_km));
+      await pushToUser(v.customer_id, {
+        title: 'Fare Verified!',
+        body: 'Admin ne ' + admin_km + 'km verify kiya. Total: Rs.' + base,
+        url: '/customer_app.html',
+        verify_id
+      });
+    }
+
+    res.json({ success: true, message: 'KM approved: ' + admin_km + 'km' });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/admin/km-verify/reject', adminAuth, async function(req, res) {
+  try {
+    var { verify_id, note } = req.body;
+    var { data: v } = await supabase.from('km_verifications')
+      .select('customer_id').eq('id', verify_id).single();
+
+    await supabase.from('km_verifications').update({
+      status: 'rejected',
+      admin_note: note || 'System calculation use karein',
+      verified_at: new Date().toISOString()
+    }).eq('id', verify_id);
+
+    if (v && v.customer_id) {
+      await pushToUser(v.customer_id, {
+        title: 'Verification Update',
+        body: note || 'System distance use hoga',
+        url: '/customer_app.html'
+      });
+    }
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+
+app.get('/api/admin/km-verifications', adminAuth, async function(req, res) {
+  var { status } = req.query;
+  var q = supabase.from('km_verifications').select('*').order('created_at', { ascending: false });
+  if (status) q = q.eq('status', status);
+  var { data } = await q.limit(50);
+  res.json({ verifications: data || [], count: (data||[]).length });
 });
 
 app.listen(PORT, function() {
