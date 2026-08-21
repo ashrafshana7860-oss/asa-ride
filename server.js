@@ -607,6 +607,43 @@ app.get('/api/admin/km-verifications', adminAuth, async function(req, res) {
   res.json({ verifications: data || [], count: (data||[]).length });
 });
 
+
+// ── DRIVER LOCATION UPDATE ───────────────────────────────────
+app.post('/api/driver/location', driverAuth, async function(req, res) {
+  try {
+    var { lat, lng } = req.body;
+    if (!lat || !lng) return res.status(400).json({ error: 'lat/lng required' });
+    await supabase.from('drivers').update({
+      last_lat: lat, last_lng: lng, last_seen: new Date().toISOString()
+    }).eq('id', req.user.id);
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── GET ONLINE DRIVERS WITH LOCATION ─────────────────────────
+app.get('/api/admin/drivers/live', adminAuth, async function(req, res) {
+  try {
+    var { data } = await supabase.from('drivers')
+      .select('id, name, phone, vehicle_type, city, state, last_lat, last_lng, last_seen, is_online, status, rides_count')
+      .eq('is_online', true)
+      .eq('status', 'approved')
+      .not('last_lat', 'is', null);
+    res.json({ drivers: data || [], count: (data || []).length });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── ALL DRIVERS WITH LOCATION ────────────────────────────────
+app.get('/api/admin/drivers/locations', adminAuth, async function(req, res) {
+  try {
+    var { data } = await supabase.from('drivers')
+      .select('id, name, vehicle_type, city, last_lat, last_lng, last_seen, is_online, status')
+      .eq('status', 'approved')
+      .not('last_lat', 'is', null)
+      .order('last_seen', { ascending: false });
+    res.json({ drivers: data || [] });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.listen(PORT, function() {
   console.log('ASA RIDE Backend running on port ' + PORT);
 });
