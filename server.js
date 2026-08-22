@@ -608,11 +608,32 @@ app.get('/api/admin/km-verifications', adminAuth, async function(req, res) {
 });
 
 
-// ── DRIVER LOCATION UPDATE ───────────────────────────────────
-app.post('/api/driver/location', driverAuth, async function(req, res) {
+// DRIVER LOCATION UPDATE
+app.post('/api/driver/location', async function(req, res) {
   try {
-    var { lat, lng } = req.body;
+    var { lat, lng, driver_id } = req.body;
     if (!lat || !lng) return res.status(400).json({ error: 'lat/lng required' });
+    
+    var updateData = { last_lat: lat, last_lng: lng, last_seen: new Date().toISOString(), is_online: true };
+    
+    // Try auth token first
+    var token = (req.headers.authorization || '').replace('Bearer ', '');
+    if (token) {
+      try {
+        var jwt = require('jsonwebtoken');
+        var decoded = jwt.verify(token, process.env.JWT_SECRET || 'ASA_RIDE_2026_STRONG_KEY');
+        await supabase.from('drivers').update(updateData).eq('id', decoded.id);
+        return res.json({ success: true });
+      } catch(e) {}
+    }
+    // Fallback: use driver_id from body
+    if (driver_id) {
+      await supabase.from('drivers').update(updateData).eq('id', driver_id);
+      return res.json({ success: true });
+    }
+    res.json({ success: false, message: 'No auth' });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
     await supabase.from('drivers').update({
       last_lat: lat, last_lng: lng, last_seen: new Date().toISOString()
     }).eq('id', req.user.id);
@@ -620,15 +641,19 @@ app.post('/api/driver/location', driverAuth, async function(req, res) {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ── GET ONLINE DRIVERS WITH LOCATION ─────────────────────────
+// GET ONLINE DRIVERS WITH LOCATION
 app.get('/api/admin/drivers/live', adminAuth, async function(req, res) {
   try {
+    var fiveMinAgo = new Date(Date.now() - 5*60*1000).toISOString();
     var { data } = await supabase.from('drivers')
       .select('id, name, phone, vehicle_type, city, state, last_lat, last_lng, last_seen, is_online, status, rides_count')
-      .eq('is_online', true)
       .eq('status', 'approved')
-      .not('last_lat', 'is', null);
+      .not('last_lat', 'is', null)
+      .gte('last_seen', fiveMinAgo)
+      .order('last_seen', { ascending: false });
     res.json({ drivers: data || [], count: (data || []).length });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
