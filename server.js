@@ -634,12 +634,6 @@ app.post('/api/driver/location', async function(req, res) {
     res.json({ success: false, message: 'No auth' });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
-    await supabase.from('drivers').update({
-      last_lat: lat, last_lng: lng, last_seen: new Date().toISOString()
-    }).eq('id', req.user.id);
-    res.json({ success: true });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
 
 // GET ONLINE DRIVERS WITH LOCATION
 app.get('/api/admin/drivers/live', adminAuth, async function(req, res) {
@@ -654,10 +648,8 @@ app.get('/api/admin/drivers/live', adminAuth, async function(req, res) {
     res.json({ drivers: data || [], count: (data || []).length });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
 
-// ── ALL DRIVERS WITH LOCATION ────────────────────────────────
+// ALL DRIVERS WITH LOCATION ────────────────────────────────
 app.get('/api/admin/drivers/locations', adminAuth, async function(req, res) {
   try {
     var { data } = await supabase.from('drivers')
