@@ -661,6 +661,27 @@ app.get('/api/admin/drivers/locations', adminAuth, async function(req, res) {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ── KEEP ALIVE - Supabase + Self ping every 4 min ─────────────
+setInterval(async function() {
+  try {
+    // Ping Supabase to prevent pause
+    await supabase.from('drivers').select('id').limit(1);
+    console.log('[KeepAlive] Supabase pinged OK -', new Date().toLocaleTimeString());
+  } catch(e) {
+    console.log('[KeepAlive] Supabase ping failed:', e.message);
+  }
+}, 4 * 60 * 1000); // Every 4 minutes
+
+// Health check endpoint for UptimeRobot
+app.get('/health', function(req, res) {
+  res.json({ status: 'ok', time: new Date().toISOString(), service: 'ASA RIDE Backend' });
+});
+
+app.get('/', function(req, res) {
+  res.json({ status: 'ASA RIDE Backend Live', time: new Date().toISOString() });
+});
+
 app.listen(PORT, function() {
   console.log('ASA RIDE Backend running on port ' + PORT);
 });
